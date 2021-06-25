@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <iostream>
 
 #define swap(a, b)\
 	do{\
@@ -19,15 +18,6 @@
     {\
 		std::cout << "[" << j << "] = " << (size_t)&Ptr[j] << std::endl;\
     }*/
-/**********************************************************************************************************************/
-static int WriteToFile(const char* FilePath, size_t TotElements, const void* Buffer, const char* FopenMode)
-{
-	FILE* FilePtr = fopen(FilePath, FopenMode);
-	if (!FilePtr) return 1;
-	fwrite(Buffer, sizeof(char), TotElements, FilePtr);
-	fclose(FilePtr);
-	return 0;
-}
 /**********************************************************************************************************************/
 static void* ArrayND(size_t size_m, unsigned short numargs, ...)
 {
