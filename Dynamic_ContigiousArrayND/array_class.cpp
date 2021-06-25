@@ -1,5 +1,5 @@
-#ifndef _ARRAYCLS_h_
-#define _ARRAYCLS_h_
+#ifndef _ARRAYCLS_H_
+#define _ARRAYCLS_H_
 
 #define _CRT_SECURE_NO_WARNINGS
 
