@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
-#include <chrono>
 #include <string>
 #include <algorithm>
 
@@ -553,38 +552,6 @@ private:
 		return true;
 	}
 	/**************************************************************************************************************/
-};
-
-
-/**********************************************************************************************************************************************************************/
-class Timer
-{
-public:
-	long long TimePassed;
-	double SecondsPassed;
-
-	Timer()
-	{
-		m_StartTimepoint = std::chrono::high_resolution_clock::now();
-	}
-
-	void Stop(void)
-	{
-		auto endTimepoint = std::chrono::high_resolution_clock::now();
-
-		auto start = std::chrono::time_point_cast<std::chrono::microseconds>(m_StartTimepoint).time_since_epoch().count();
-		auto end = std::chrono::time_point_cast<std::chrono::microseconds>(endTimepoint).time_since_epoch().count();
-
-		auto duration = end - start;
-		double sec = duration * 0.000001;
-
-		TimePassed = duration;
-		SecondsPassed = sec;
-
-		std::cout << "Time taken seconds: " << sec << "\n";
-	}
-private:
-	std::chrono::time_point< std::chrono::high_resolution_clock> m_StartTimepoint;
 };
 
 #endif	//_ARRAYCLS_H_
