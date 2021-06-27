@@ -1,5 +1,5 @@
-#ifndef _ARRAYCLS_H_
-#define _ARRAYCLS_H_
+#ifndef _ARRAYCLS_h_
+#define _ARRAYCLS_h_
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -8,8 +8,10 @@
 #include <string.h>
 #include <stdio.h>
 #include <iostream>
+#include <chrono>
 #include <string>
 #include <algorithm>
+#include <vector>
 
 #define swap(a, b)\
 	do{\
@@ -36,59 +38,20 @@
 		}\
     }while(0)
 
-#define PrintArray(Ptr, Size)\
-    for(size_t j=0; j < Size; j++)\
-    {\
-		std::cout << "[" << j << "] = " << Ptr[j] << std::endl;\
-    }
-
-
-static int WriteToFile(const char* FilePath, size_t TotElements, const void* Buffer, const char* FopenMode)
-{
-	FILE* FilePtr = fopen(FilePath, FopenMode);
-	if (!FilePtr) return 1;
-	fwrite(Buffer, sizeof(char), TotElements, FilePtr);
-	fclose(FilePtr);
-	return 0;
-}
-
-static int ReadFromFile(const char* FilePath, size_t TotElements, void* Buffer, const char* FopenMode)
-{
-	FILE* FilePtr = fopen(FilePath, FopenMode);
-	if (!FilePtr) return 1;
-	fread(Buffer, sizeof(char), TotElements, FilePtr);
-	fclose(FilePtr);
-	return 0;
-}
-
-static void RandomFill(int* Array, size_t size)
-{
-	unsigned int seed = (unsigned int)time(0);
-	
-	for (size_t j = 0; j < size; j++)
-	{
-		seed++;
-		srand(seed);
-		Array[j] = rand();
-		//printf("%d\n", Array[j]);
-	}
-}
-
 /***************************************************************************************************************************************/
 template <typename DataType>
 
 class ArrayCls
 {
 public:
-	DataType* ArrayPtr;
 
 	/**************************************************************************************************************/
 		///Destructor///
 	~ArrayCls()
 	{
-		if (ArrayPtr) free(ArrayPtr);
-		if (Dimensions) free(Dimensions);
-		if (DimensionsProd) free(DimensionsProd);
+		ArrayPtr.~vector();
+		Dimensions.~vector();
+		DimensionsProd.~vector();
 	}
 	/**************************************************************************************************************/
 		///Constructor///
@@ -99,18 +62,20 @@ public:
 
 		size_t* args = (size_t*)listPointer;
 
-		Dimensions = (size_t*)malloc(TotDimen * sizeof(size_t));
+		Dimensions.resize(TotDimen);
+		Dimensions.shrink_to_fit();
+		Dimensions.assign(args, args+(TotDimen * sizeof(size_t)));
 
-		memcpy(Dimensions, args, TotDimen * sizeof(size_t));
 		va_end(listPointer);
 
 		unsigned short DimPtr_size = TotDimen - 1;
-		size_m = sizeof(DataType);
 		TotDim = TotDimen;
 
 		if (TotDimen > 1)
 		{
-			DimensionsProd = (size_t*)malloc(DimPtr_size * sizeof(size_t));
+			DimensionsProd.resize(TotDimen);
+			DimensionsProd.shrink_to_fit();
+
 			///Calculating DimProd
 			size_t CurrDimOffset = Dimensions[DimPtr_size];
 			unsigned short counter = 0;
@@ -123,18 +88,26 @@ public:
 
 				//std::cout << "Dimensions[" << counter - 1 << "] = " << DimensionsProd[counter - 1] << std::endl;
 			}
-			SwitchOrder(DimensionsProd, DimPtr_size);
+			SwitchOrder(DimensionsProd.data(), DimPtr_size);
 			TotalElements = DimensionsProd[0] * Dimensions[0];
 		}
 		else if (TotDimen < 1) this->~ArrayCls();
 		else
 		{
-			DimensionsProd = (size_t*)malloc(sizeof(size_t));
+			DimensionsProd.resize(1);
+			DimensionsProd.shrink_to_fit();
+
+			//DimensionsProd = (size_t*)malloc(sizeof(size_t));
 			DimensionsProd[0] = args[0];
 			TotalElements = args[0];
 		}
-		ArrayPtr = (DataType*)malloc(TotalElements * size_m);
-		//std::cout << ArrayPtr << std::endl;
+		ArrayPtr.resize(TotalElements);
+		ArrayPtr.shrink_to_fit();
+	}
+	/**************************************************************************************************************/
+	DataType* data()
+	{
+		return(ArrayPtr.data());
 	}
 	/**************************************************************************************************************/
 		///access an array member address with the number of dimensions that you want
@@ -152,8 +125,8 @@ public:
 	///access an array member address with all dimensions with an array of dimensions
 	DataType& get_p(unsigned short TotDim_f, size_t* args)
 	{
-		if (TotDim_f < 1 || TotDim_f > TotDim)		return *((DataType*) (size_t)(0));
-		else if (TotDim == 1)						return *(ArrayPtr + *args);
+		if (TotDim_f < 1 || TotDim_f > TotDim)		return *((DataType*) 0);
+		else if (TotDim == 1)						return ArrayPtr[*args];
 
 		unsigned short TotDim_to = TotDim_f - 1;
 		size_t offset;
@@ -167,7 +140,7 @@ public:
 			offset += args[j] * DimensionsProd[j];
 		}
 
-		return *(ArrayPtr + offset);
+		return ArrayPtr[offset];
 	}
 	/**************************************************************************************************************/
 		///sort the array in an increasing order
@@ -176,10 +149,10 @@ public:
 		size_t low_int, high_int;
 
 		if (!low) low_int = 0;
-		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr) / sizeof(DataType));
+		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		if (!high) high_int = TotalElements - 1;
-		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr) / sizeof(DataType));
+		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		QuickSort_Driver(low_int, high_int);
 		return;
@@ -189,10 +162,10 @@ public:
 	{
 		DataType *low_int, *high_int;
 
-		if (!low) low_int = ArrayPtr;
+		if (!low) low_int = ArrayPtr.data();
 		else low_int = low;
 
-		if (!high) high_int = ArrayPtr + TotalElements - 1;
+		if (!high) high_int = ArrayPtr.data() + TotalElements - 1;
 		else high_int = high;
 
 		std::sort(low_int, high_int);
@@ -204,10 +177,10 @@ public:
 		size_t low_int, high_int;
 
 		if (!low) low_int = 0;
-		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr) / sizeof(DataType));
+		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		if (!high) high_int = TotalElements - 1;
-		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr) / sizeof(DataType));
+		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		return IsSorted_Driver(low_int, high_int);
 	}
@@ -217,10 +190,10 @@ public:
 		size_t low_int, high_int;
 
 		if (!low) low_int = 0;
-		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr) / sizeof(DataType));
+		else low_int = (size_t)(((size_t)low - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		if (!high) high_int = TotalElements - 1;
-		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr) / sizeof(DataType));
+		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
 		DataType temp;
 		while (low_int < high_int)
@@ -233,7 +206,7 @@ public:
 		}
 	}
 	/**************************************************************************************************************/
-	char Resize(unsigned short TotDim_f, ...)
+	void Resize(unsigned short TotDim_f, ...)
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDim_f);
@@ -241,13 +214,9 @@ public:
 		if (TotDim_f < 1)
 		{
 			va_end(listPointer);
-			return 3;
+			return;
 		}
-		size_t* args = (size_t*)listPointer;
-
-		char returnVal = Resize_p(TotDim_f, args);
-
-		return returnVal;
+		Resize_p(TotDim_f, (size_t*)listPointer);
 	}
 	/**************************************************************************************************************/
 		///Expand the array and copying the members
@@ -255,16 +224,18 @@ public:
 	{
 		if (TotDim_f < 1) return 3;
 
-		size_t* Dimensions_f = (size_t*)malloc(TotDim_f * sizeof(size_t));
-		memcpy(Dimensions_f, Dimensions_p, TotDim_f * sizeof(size_t));
+		std::vector<size_t> Dimensions_f;
+		Dimensions_f.resize(TotDim_f);
+		Dimensions_f.shrink_to_fit();
+		Dimensions_f.assign(Dimensions_p, Dimensions_p + (TotDim_f * sizeof(size_t)));
 
 		///Calculate new DimensionsProd_f
 		size_t len;
-		size_t* DimensionsProd_f;
+		std::vector<size_t> DimensionsProd_f;
 		if (TotDim_f > 1)
 		{
 			unsigned short DimPtr_size = TotDim_f - 1;
-			DimensionsProd_f = (size_t*)malloc(DimPtr_size * sizeof(size_t));
+			DimensionsProd_f.resize(DimPtr_size);
 			size_t CurrDimOffset;
 			unsigned short counter = 0;
 
@@ -283,14 +254,16 @@ public:
 		else
 		{
 			len = Dimensions_f[0];
-			DimensionsProd_f = (size_t*)malloc(sizeof(size_t));
+			DimensionsProd_f.resize(1);
 			DimensionsProd_f[0] = Dimensions_f[0];
 		}
 
-		DataType* array_temp = (DataType*)malloc(len * size_m);
+		std::vector<DataType> array_temp;
+		array_temp.resize(len);
+		array_temp.shrink_to_fit();
 
 		///1 dimension case
-		if (MIN(TotDim_f, TotDim) == 1) memcpy(array_temp, ArrayPtr, MIN(DimensionsProd_f[0], DimensionsProd[0]));
+		if (MIN(TotDim_f, TotDim) == 1) memcpy((void*)array_temp.data(), (void*)ArrayPtr.data(), MIN(DimensionsProd_f[0], DimensionsProd[0]));
 
 		///dimensions>1 dimension case
 		else
@@ -298,9 +271,9 @@ public:
 			///Calculate array dimensions differences
 			unsigned short Lowest_arr = MIN(TotDim, TotDim_f);
 			size_t BlockMemory = MIN(Dimensions_f[0], Dimensions[0]) * DimensionsProd[0];
-			SwitchOrder(Dimensions_f, TotDim_f);
-			SwitchOrder(Dimensions, TotDim);
-			SwitchOrder(DimensionsProd, (TotDim - 1));
+			SwitchOrder(Dimensions_f.data(), TotDim_f);
+			SwitchOrder(Dimensions.data(), TotDim);
+			SwitchOrder(DimensionsProd.data(), (TotDim - 1));
 
 			unsigned short Lowest_arr_1 = Lowest_arr - 1;
 			unsigned short FirstDifference = Lowest_arr_1;
@@ -318,12 +291,13 @@ public:
 			}
 
 			///same dimensions but more of them
-			if (FirstDifference == Lowest_arr_1) memcpy(array_temp, ArrayPtr, BlockMemory);
+			if (FirstDifference == Lowest_arr_1) memcpy((void*)array_temp.data(), (void*)ArrayPtr.data(), BlockMemory);
 			///other combinations
 			else
 			{
 				///Calculate minimal dimensions
-				size_t* Dimensions_min = (size_t*)calloc(Lowest_arr, sizeof(size_t));
+				std::vector<size_t> Dimensions_min;
+				Dimensions_min.resize(Lowest_arr); //memset(0)
 
 				for (unsigned short j = 0; j < Lowest_arr; j++)
 				{
@@ -331,7 +305,8 @@ public:
 				}
 
 				///Memcpy the array
-				size_t* Dimensions_final = (size_t*)calloc(Lowest_arr, sizeof(size_t));
+				std::vector<size_t> Dimensions_final;
+				Dimensions_final.resize(Lowest_arr); //memset(0)
 				size_t JumpOffset_src = 0, JumpOffset_dest = 0;
 				unsigned short FirstDifference_1 = FirstDifference + 1;
 
@@ -353,17 +328,14 @@ public:
 					if (Dimensions_final[Lowest_arr_1] >= Dimensions_min[Lowest_arr_1]) break;
 
 					JumpOffset_src += BlockMembersJmp_src;
-					JumpOffset_dest = OffsetCalculator(Dimensions_final, DimensionsProd_f, Lowest_arr);
+					JumpOffset_dest = OffsetCalculator(Dimensions_final.data(), DimensionsProd_f.data(), Lowest_arr);
 				}
-				free(Dimensions_final);
-				free(Dimensions_min);
+				Dimensions_final.~vector();
+				Dimensions_min.~vector();
 			}
-			SwitchOrder(DimensionsProd_f, (TotDim_f - 1));
-			SwitchOrder(Dimensions_f, TotDim_f);
+			SwitchOrder(DimensionsProd_f.data(), (TotDim_f - 1));
+			SwitchOrder(Dimensions_f.data(), TotDim_f);
 		}
-		free(ArrayPtr);
-		free(Dimensions);
-		free(DimensionsProd);
 
 		ArrayPtr = array_temp;
 		Dimensions = Dimensions_f;
@@ -376,7 +348,8 @@ public:
 	/**************************************************************************************************************/
 	void PrintArrayAddresses()
 	{
-		size_t* Dimensions_final = (size_t*)calloc(TotDim, sizeof(size_t));
+		std::vector<size_t> Dimensions_final;
+		Dimensions_final.resize(TotDim);
 		unsigned short TotDim_1 = TotDim - 1;
 		while (1)
 		{
@@ -384,7 +357,7 @@ public:
 			{
 				std::cout << (size_t)Dimensions_final[j] << " ";
 			}
-			std::cout << "= " << (size_t)get_p(Dimensions_final) << std::endl;
+			std::cout << "= " << "Addr: " << (size_t)&get_p(TotDim, Dimensions_final.data()) <<"   Value: " << get_p(TotDim, Dimensions_final.data()) << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
@@ -399,35 +372,6 @@ public:
 			//printf("%d %d\n", Dimensions_final[2], Dimensions[2]);
 			if (Dimensions_final[0] >= Dimensions[0]) break;
 		}
-		free(Dimensions_final);
-	}
-	/**************************************************************************************************************/
-	void PrintArrayElements()
-	{
-		size_t* Dimensions_final = (size_t*)calloc(TotDim, sizeof(size_t));
-		unsigned short TotDim_1 = TotDim - 1;
-		while (1)
-		{
-			for (unsigned short j = 0; j < TotDim; j++)
-			{
-				std::cout << (size_t)Dimensions_final[j] << " ";
-			}
-			std::cout << "= " << get_p(TotDim_1, Dimensions_final) << std::endl;
-
-			Dimensions_final[TotDim_1] += 1;
-
-			for (unsigned short j = TotDim_1; j > 0; j--)
-			{
-				if (Dimensions_final[j] == Dimensions[j])
-				{
-					Dimensions_final[j] = 0;
-					Dimensions_final[j - 1] += 1;
-				}
-			}
-			//printf("%d %d\n", Dimensions_final[2], Dimensions[2]);
-			if (Dimensions_final[0] >= Dimensions[0]) break;
-		}
-		if(!Dimensions_final) free(Dimensions_final);
 	}
 	/**************************************************************************************************************/
 	void fill(DataType* Value)
@@ -456,24 +400,26 @@ public:
 	size_t* Get_Dimensions(void)
 	{
 		size_t len = sizeof(size_t) * TotDim;
-		size_t* temp_ptr = (size_t*)malloc(len);
-		memcpy(temp_ptr, Dimensions, len);
+		std::vector<size_t> temp_ptr;
+		temp_ptr.resize(TotDim - 1);
+		memcpy((void*)temp_ptr.data(), Dimensions, len);
 		return temp_ptr;
 	}
 	/***************************************************************************************************************************************/
-	size_t* Get_DimensionsProd(void)
+	std::vector<size_t> Get_DimensionsProd(void)
 	{
 		size_t len = sizeof(size_t) * TotDim - 1;
-		size_t* temp_ptr = (size_t*)malloc(len);
-		memcpy(temp_ptr, DimensionsProd, len);
+		std::vector<size_t> temp_ptr;
+		temp_ptr.resize(TotDim - 1);
+		memcpy((void*)temp_ptr.data(), DimensionsProd, len);
 		return temp_ptr;
 	}
 	/***************************************************************************************************************************************/
 private:
-	size_t size_m;
+	std::vector<DataType> ArrayPtr;
 	unsigned short TotDim;
-	size_t* Dimensions;
-	size_t* DimensionsProd;
+	std::vector<size_t> Dimensions;
+	std::vector<size_t> DimensionsProd;
 	size_t TotalElements;
 
 	///used in expand functions with the arguments array switched order
