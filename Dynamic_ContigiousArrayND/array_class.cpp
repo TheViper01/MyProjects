@@ -64,7 +64,7 @@ public:
 
 		Dimensions.resize(TotDimen);
 		Dimensions.shrink_to_fit();
-		Dimensions.assign(args, args+(TotDimen * sizeof(size_t)));
+		Dimensions.assign(args, args + (TotDimen * sizeof(size_t)));
 
 		va_end(listPointer);
 
@@ -125,7 +125,7 @@ public:
 	///access an array member address with all dimensions with an array of dimensions
 	DataType& get_p(unsigned short TotDim_f, size_t* args)
 	{
-		if (TotDim_f < 1 || TotDim_f > TotDim)		return *((DataType*) 0);
+		if (TotDim_f < 1 || TotDim_f > TotDim)		return *((DataType*)0);
 		else if (TotDim == 1)						return ArrayPtr[*args];
 
 		unsigned short TotDim_to = TotDim_f - 1;
@@ -160,7 +160,7 @@ public:
 	/**************************************************************************************************************/
 	void sort(DataType* low = 0, DataType* high = 0)
 	{
-		DataType *low_int, *high_int;
+		DataType* low_int, * high_int;
 
 		if (!low) low_int = ArrayPtr.data();
 		else low_int = low;
@@ -357,7 +357,7 @@ public:
 			{
 				std::cout << (size_t)Dimensions_final[j] << " ";
 			}
-			std::cout << "= " << "Addr: " << (size_t)&get_p(TotDim, Dimensions_final.data()) <<"   Value: " << get_p(TotDim, Dimensions_final.data()) << std::endl;
+			std::cout << "= " << "Addr: " << (size_t)&get_p(TotDim, Dimensions_final.data()) << "   Value: " << get_p(TotDim, Dimensions_final.data()) << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
@@ -397,7 +397,7 @@ public:
 		return TotDim;
 	}
 	/***************************************************************************************************************************************/
-	size_t* Get_Dimensions(void)
+	std::vector<size_t> Get_Dimensions(void)
 	{
 		size_t len = sizeof(size_t) * TotDim;
 		std::vector<size_t> temp_ptr;
