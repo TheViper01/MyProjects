@@ -54,7 +54,7 @@ public:
 	}
 	/**************************************************************************************************************/
 		///Constructor///
-	ArrayCls <DataType>(void)
+	ArrayCls <DataType>()
 	{
 		TotDim = 0;
 		TotalElements = 0;
@@ -224,11 +224,10 @@ public:
 		}
 		else
 		{
-			DimensionsProd.resize(1);
+			DimensionsProd.resize(0);
 			DimensionsProd.shrink_to_fit();
 
-			//DimensionsProd = (size_t*)malloc(sizeof(size_t));
-			DimensionsProd[0] = args[0];
+			//DimensionsProd[0] = args[0];
 			TotalElements = args[0];
 		}
 		TotDim = TotDim_f;
@@ -240,27 +239,28 @@ public:
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDim_f);
-
-		if (TotDim_f < 1)
-		{
-			va_end(listPointer);
-			return;
-		}
 		Resize_p(TotDim_f, (size_t*)listPointer);
+		va_end(listPointer);
 	}
 	/**************************************************************************************************************/
 		///Expand the array and copying the members
 	void Resize_p(unsigned short TotDim_f, size_t* Dimensions_p)
 	{
-		std::vector<char> gg;
 		if (TotDim_f < 1)
 		{
 			Dimensions.resize(0);
 			Dimensions.shrink_to_fit();
 			DimensionsProd.resize(0);
 			DimensionsProd.shrink_to_fit();
+			ArrayPtr.resize(0);
+			ArrayPtr.shrink_to_fit();
 			TotDim = 0;
 			TotalElements = 0;
+			return;
+		}
+		if (TotDim == 0)
+		{
+			init_p(TotDim_f, Dimensions_p);
 			return;
 		}
 
@@ -288,6 +288,8 @@ public:
 					Dimensions.shrink_to_fit();
 					DimensionsProd.resize(0);
 					DimensionsProd.shrink_to_fit();
+					ArrayPtr.resize(0);
+					ArrayPtr.shrink_to_fit();
 					TotDim = 0;
 					TotalElements = 0;
 					return;
@@ -303,8 +305,9 @@ public:
 		else
 		{
 			len = Dimensions_f[0];
-			DimensionsProd_f.resize(1);
-			DimensionsProd_f[0] = Dimensions_f[0];
+			DimensionsProd_f.resize(0);
+			DimensionsProd_f.shrink_to_fit();
+			//DimensionsProd_f[0] = Dimensions_f[0];
 		}
 
 		std::vector<DataType> array_temp;
@@ -312,7 +315,10 @@ public:
 		array_temp.shrink_to_fit();
 
 		///1 dimension case
-		if (MIN(TotDim_f, TotDim) == 1) memcpy((void*)array_temp.data(), (void*)ArrayPtr.data(), MIN(DimensionsProd_f[0], DimensionsProd[0]));
+		if (MIN(TotDim_f, TotDim) == 1)
+		{
+			std::copy(ArrayPtr.begin(), ArrayPtr.end(), array_temp.begin());
+		}
 
 		///dimensions>1 dimension case
 		else
@@ -395,6 +401,11 @@ public:
 	/**************************************************************************************************************/
 	void PrintArrayAddresses()
 	{
+		if (TotalElements <= 0)
+		{
+			std::cout << "The array size is 0" << std::endl;
+			return;
+		}
 		std::vector<size_t> Dimensions_final;
 		Dimensions_final.resize(TotDim);
 		unsigned short TotDim_1 = TotDim - 1;
@@ -546,5 +557,6 @@ private:
 	}
 	/**************************************************************************************************************/
 };
+
 
 #endif	//_ARRAYCLS_CPP_
