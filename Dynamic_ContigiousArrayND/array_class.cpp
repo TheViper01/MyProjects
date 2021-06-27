@@ -1,5 +1,5 @@
-#ifndef _ARRAYCLS_h_
-#define _ARRAYCLS_h_
+#ifndef _ARRAYCLS_CPP_
+#define _ARRAYCLS_CPP_
 
 #define _CRT_SECURE_NO_WARNINGS
 
@@ -547,4 +547,4 @@ private:
 	/**************************************************************************************************************/
 };
 
-#endif	//_ARRAYCLS_H_
+#endif	//_ARRAYCLS_CPP_
