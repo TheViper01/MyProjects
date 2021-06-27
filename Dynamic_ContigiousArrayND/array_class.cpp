@@ -54,54 +54,19 @@ public:
 	}
 	/**************************************************************************************************************/
 		///Constructor///
+	ArrayCls <DataType>(void)
+	{
+		TotDim = 0;
+		TotalElements = 0;
+	}
 	ArrayCls <DataType>(unsigned short TotDimen, ...)
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDimen);
 
-		size_t* args = (size_t*)listPointer;
-
-		Dimensions.resize(TotDimen);
-		Dimensions.shrink_to_fit();
-		Dimensions.assign(args, args + (TotDimen * sizeof(size_t)));
+		init_p(TotDimen, (size_t*)listPointer);
 
 		va_end(listPointer);
-
-		unsigned short DimPtr_size = TotDimen - 1;
-		TotDim = TotDimen;
-
-		if (TotDimen > 1)
-		{
-			DimensionsProd.resize(TotDimen);
-			DimensionsProd.shrink_to_fit();
-
-			///Calculating DimProd
-			size_t CurrDimOffset = Dimensions[DimPtr_size];
-			unsigned short counter = 0;
-			for (unsigned short j = DimPtr_size; j > 0; j--)
-			{
-				if (Dimensions[j] == 0) this->~ArrayCls();
-
-				DimensionsProd[counter++] = CurrDimOffset;
-				CurrDimOffset *= Dimensions[j - 1];
-
-				//std::cout << "Dimensions[" << counter - 1 << "] = " << DimensionsProd[counter - 1] << std::endl;
-			}
-			SwitchOrder(DimensionsProd.data(), DimPtr_size);
-			TotalElements = DimensionsProd[0] * Dimensions[0];
-		}
-		else if (TotDimen < 1) this->~ArrayCls();
-		else
-		{
-			DimensionsProd.resize(1);
-			DimensionsProd.shrink_to_fit();
-
-			//DimensionsProd = (size_t*)malloc(sizeof(size_t));
-			DimensionsProd[0] = args[0];
-			TotalElements = args[0];
-		}
-		ArrayPtr.resize(TotalElements);
-		ArrayPtr.shrink_to_fit();
 	}
 	/**************************************************************************************************************/
 	DataType* data()
@@ -205,6 +170,72 @@ public:
 		}
 	}
 	/**************************************************************************************************************/
+	void init(unsigned short TotDim_f, ...)
+	{
+		va_list listPointer;
+		va_start(listPointer, TotDim_f);
+
+		init_p(TotDim_f, (size_t*)listPointer);
+
+		va_end(listPointer);
+	}
+	/**************************************************************************************************************/
+	void init_p(unsigned short TotDim_f, size_t* Dimensions_p)
+	{
+		size_t* args = (size_t*)Dimensions_p;
+
+		Dimensions.resize(TotDim_f);
+		Dimensions.shrink_to_fit();
+		Dimensions.assign(args, args + (TotDim_f * sizeof(size_t)));
+
+		unsigned short DimPtr_size = TotDim_f - 1;
+
+		if (TotDim_f > 1)
+		{
+			DimensionsProd.resize(TotDim_f);
+			DimensionsProd.shrink_to_fit();
+
+			///Calculating DimProd
+			size_t CurrDimOffset = Dimensions[DimPtr_size];
+			unsigned short counter = 0;
+			for (unsigned short j = DimPtr_size; j > 0; j--)
+			{
+				if (Dimensions[j] == 0)
+				{
+					Dimensions.resize(0);
+					Dimensions.shrink_to_fit();
+					DimensionsProd.resize(0);
+					DimensionsProd.shrink_to_fit();
+					return;
+				}
+				DimensionsProd[counter++] = CurrDimOffset;
+				CurrDimOffset *= Dimensions[j - 1];
+
+				//std::cout << "Dimensions[" << counter - 1 << "] = " << DimensionsProd[counter - 1] << std::endl;
+			}
+			SwitchOrder(DimensionsProd.data(), DimPtr_size);
+			TotalElements = DimensionsProd[0] * Dimensions[0];
+		}
+		else if (TotDim_f < 1)
+		{
+			TotDim = 0;
+			TotalElements = 0;
+			return;
+		}
+		else
+		{
+			DimensionsProd.resize(1);
+			DimensionsProd.shrink_to_fit();
+
+			//DimensionsProd = (size_t*)malloc(sizeof(size_t));
+			DimensionsProd[0] = args[0];
+			TotalElements = args[0];
+		}
+		TotDim = TotDim_f;
+		ArrayPtr.resize(TotalElements);
+		ArrayPtr.shrink_to_fit();
+	}
+	/**************************************************************************************************************/
 	void Resize(unsigned short TotDim_f, ...)
 	{
 		va_list listPointer;
@@ -219,9 +250,19 @@ public:
 	}
 	/**************************************************************************************************************/
 		///Expand the array and copying the members
-	char Resize_p(unsigned short TotDim_f, size_t* Dimensions_p)
+	void Resize_p(unsigned short TotDim_f, size_t* Dimensions_p)
 	{
-		if (TotDim_f < 1) return 3;
+		std::vector<char> gg;
+		if (TotDim_f < 1)
+		{
+			Dimensions.resize(0);
+			Dimensions.shrink_to_fit();
+			DimensionsProd.resize(0);
+			DimensionsProd.shrink_to_fit();
+			TotDim = 0;
+			TotalElements = 0;
+			return;
+		}
 
 		std::vector<size_t> Dimensions_f;
 		Dimensions_f.resize(TotDim_f);
@@ -241,7 +282,16 @@ public:
 			CurrDimOffset = Dimensions_f[DimPtr_size];
 			for (unsigned short j = DimPtr_size; j > 0; j--)
 			{
-				if (Dimensions_f[j] == 0) return 2;
+				if (Dimensions_f[j] == 0)
+				{
+					Dimensions.resize(0);
+					Dimensions.shrink_to_fit();
+					DimensionsProd.resize(0);
+					DimensionsProd.shrink_to_fit();
+					TotDim = 0;
+					TotalElements = 0;
+					return;
+				}
 
 				DimensionsProd_f[counter++] = CurrDimOffset;
 				CurrDimOffset *= Dimensions_f[j - 1];
@@ -341,8 +391,6 @@ public:
 		DimensionsProd = DimensionsProd_f;
 		TotDim = TotDim_f;
 		TotalElements = len;
-
-		return 0;
 	}
 	/**************************************************************************************************************/
 	void PrintArrayAddresses()
