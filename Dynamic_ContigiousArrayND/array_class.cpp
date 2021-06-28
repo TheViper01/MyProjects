@@ -3,26 +3,35 @@
 
 #define _CRT_SECURE_NO_WARNINGS
 
-#include <stdlib.h>
 #include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
 #include <iostream>
+#include <chrono>
 #include <string>
 #include <algorithm>
 #include <vector>
 
+
+#ifndef swap(a, b)
 #define swap(a, b)\
 	do{\
 		decltype(a) temp = a;\
 		a = b;\
 		b = temp;\
 	}while(0)
+#endif // !swap(a, b)
 
 
+
+#ifndef MIN(X, Y)
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#endif // !MIN(X, Y)
 
+#ifndef MIN(X, Y)
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#endif // !MIN(X, Y)
+
+
+#ifndef SwitchOrder(arr_ptr, TotIteams)
 #define SwitchOrder(arr_ptr, TotIteams)\
     do{\
 		typename std::remove_pointer <decltype(arr_ptr)>::type temp;\
@@ -36,6 +45,8 @@
 			end--;\
 		}\
     }while(0)
+#endif // !SwitchOrder(arr_ptr, TotIteams)
+
 
 template <typename DataType>
 
