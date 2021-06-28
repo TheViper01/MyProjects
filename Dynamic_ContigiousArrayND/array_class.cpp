@@ -37,7 +37,6 @@
 		}\
     }while(0)
 
-/***************************************************************************************************************************************/
 template <typename DataType>
 
 class ArrayCls
@@ -307,7 +306,6 @@ public:
 			len = Dimensions_f[0];
 			DimensionsProd_f.resize(0);
 			DimensionsProd_f.shrink_to_fit();
-			//DimensionsProd_f[0] = Dimensions_f[0];
 		}
 
 		std::vector<DataType> array_temp;
@@ -317,7 +315,7 @@ public:
 		///1 dimension case
 		if (MIN(TotDim_f, TotDim) == 1)
 		{
-			std::copy(ArrayPtr.begin(), ArrayPtr.end(), array_temp.begin());
+			std::copy(ArrayPtr.begin(), ArrayPtr.begin() + MIN(Dimensions_f[TotDim_f-1], Dimensions[TotDim-1]), array_temp.begin());
 		}
 
 		///dimensions>1 dimension case
@@ -338,7 +336,7 @@ public:
 			{
 				if (Dimensions_f[j] != Dimensions[j])
 				{
-					BlockMemory = MIN(DimensionsProd[j], DimensionsProd_f[j]) * sizeof(DataType);
+					BlockMemory = MIN(DimensionsProd[j], DimensionsProd_f[j]);
 					FirstDifference = j;
 					BlockMembersJmp_src = DimensionsProd[j];
 					break;
@@ -346,7 +344,10 @@ public:
 			}
 
 			///same dimensions but more of them
-			if (FirstDifference == Lowest_arr_1) memcpy((void*)array_temp.data(), (void*)ArrayPtr.data(), BlockMemory);
+			if (FirstDifference == Lowest_arr_1)
+			{
+				std::copy(ArrayPtr.begin(), ArrayPtr.begin() + BlockMemory, array_temp.begin());
+			}
 			///other combinations
 			else
 			{
@@ -367,7 +368,7 @@ public:
 
 				while (1)
 				{
-					memcpy(&array_temp[JumpOffset_dest], &ArrayPtr[JumpOffset_src], BlockMemory);
+					std::copy(ArrayPtr.begin() + JumpOffset_src, ArrayPtr.begin() + JumpOffset_src + BlockMemory, array_temp.begin() + JumpOffset_dest);
 
 					Dimensions_final[FirstDifference_1]++;
 
