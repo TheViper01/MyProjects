@@ -29,14 +29,11 @@ public:
 		TotDim = 0;
 		TotalElements = 0;
 	}
-	arrayND <DataType>(unsigned short TotDimen, ...)
+	template<typename... Dim>
+	arrayND <DataType>(Dim... dim)
 	{
-		va_list listPointer;
-		va_start(listPointer, TotDimen);
-
-		init_p(TotDimen, (size_t*)listPointer);
-
-		va_end(listPointer);
+		size_t dimensions_f[] = {dim...};
+		init_p(_countof(dimensions_f), dimensions_f);
 	}
 	/**************************************************************************************************************/
 	DataType* data()
@@ -44,15 +41,12 @@ public:
 		return(ArrayPtr.data());
 	}
 	/**************************************************************************************************************/
-		///access an array member address with the number of dimensions that you want
-	DataType& at(unsigned short TotDim_f, ...)
+	///access an array member address with the number of dimensions that you want
+	template<typename... Dim>
+	DataType& at(Dim... dim)
 	{
-		va_list listPointer;
-		va_start(listPointer, TotDim_f);
-
-		DataType& val = at_p(TotDim_f, (size_t*)listPointer);
-
-		va_end(listPointer);
+		size_t dimensions_f[] = {dim...};
+		DataType& val = at_p(_countof(dimensions_f), dimensions_f);
 		return val;
 	}
 	/**************************************************************************************************************/
@@ -140,14 +134,11 @@ public:
 		}
 	}
 	/**************************************************************************************************************/
-	void init(unsigned short TotDim_f, ...)
+	template<typename... Dim>
+	void init(Dim... dim)
 	{
-		va_list listPointer;
-		va_start(listPointer, TotDim_f);
-
-		init_p(TotDim_f, (size_t*)listPointer);
-
-		va_end(listPointer);
+		size_t dimensions_f[] = {dim...};
+		init_p(_countof(dimensions_f), dimensions_f);
 	}
 	/**************************************************************************************************************/
 	void init_p(unsigned short TotDim_f, size_t* Dimensions_p)
@@ -205,12 +196,11 @@ public:
 		ArrayPtr.shrink_to_fit();
 	}
 	/**************************************************************************************************************/
-	void resize(unsigned short TotDim_f, ...)
+	template<typename... Dim>
+	void resize(Dim... dim)
 	{
-		va_list listPointer;
-		va_start(listPointer, TotDim_f);
-		resize_p(TotDim_f, (size_t*)listPointer);
-		va_end(listPointer);
+		size_t dimensions_f[] = {dim...};
+		resize_p(_countof(dimensions_f), dimensions_f);
 	}
 	/**************************************************************************************************************/
 		///Expand the array and copying the members
