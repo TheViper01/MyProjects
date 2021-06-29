@@ -386,7 +386,7 @@ public:
 				std::cout << "[" << (size_t)Dimensions_final[j] << "]";
 			}
 			DataType &return_value = at_p(TotDim, Dimensions_final.data());
-			std::cout << " = " << "Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
+			std::cout << " = Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
