@@ -428,12 +428,11 @@ public:
 		return Dimensions;
 	}
 	/***************************************************************************************************************************************/
-	std::vector<size_t> DimensionsProd;
 private:
 	std::vector<DataType> ArrayPtr;
 	unsigned short TotDim;
 	std::vector<size_t> Dimensions;
-	//std::vector<size_t> DimensionsProd;
+	std::vector<size_t> DimensionsProd;
 	size_t TotalElements;
 
 	///used in expand functions with the arguments array switched order
