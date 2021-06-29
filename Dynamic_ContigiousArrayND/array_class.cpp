@@ -47,13 +47,13 @@
 
 /***************************************************************************************************************************************/
 template <typename DataType>
-class ArrayCls
+class arrayND
 {
 public:
 
 	/**************************************************************************************************************/
 	///Destructor///
-	~ArrayCls()
+	~arrayND()
 	{
 		ArrayPtr.~vector();
 		Dimensions.~vector();
@@ -61,12 +61,12 @@ public:
 	}
 	/**************************************************************************************************************/
 	///Constructor///
-	ArrayCls <DataType>()
+	arrayND <DataType>()
 	{
 		TotDim = 0;
 		TotalElements = 0;
 	}
-	ArrayCls <DataType>(unsigned short TotDimen, ...)
+	arrayND <DataType>(unsigned short TotDimen, ...)
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDimen);
@@ -422,10 +422,10 @@ public:
 		{
 			for (unsigned short j = 0; j < TotDim; j++)
 			{
-				std::cout << (size_t)Dimensions_final[j] << " ";
+				std::cout << "[" << (size_t)Dimensions_final[j] << "]";
 			}
 			DataType return_value = at_p(TotDim, Dimensions_final.data());
-			std::cout << "= " << "Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
+			std::cout << " = " << "Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
