@@ -1,11 +1,8 @@
 #ifndef _ARRAYCLS_CPP_
 #define _ARRAYCLS_CPP_
 
-#define _CRT_SECURE_NO_WARNINGS
-
 #include <stdarg.h>
 #include <iostream>
-#include <chrono>
 #include <string>
 #include <algorithm>
 #include <vector>
@@ -48,14 +45,14 @@
 #endif // !SwitchOrder(arr_ptr, TotIteams)
 
 
+/***************************************************************************************************************************************/
 template <typename DataType>
-
 class ArrayCls
 {
 public:
 
 	/**************************************************************************************************************/
-		///Destructor///
+	///Destructor///
 	~ArrayCls()
 	{
 		ArrayPtr.~vector();
@@ -63,7 +60,7 @@ public:
 		DimensionsProd.~vector();
 	}
 	/**************************************************************************************************************/
-		///Constructor///
+	///Constructor///
 	ArrayCls <DataType>()
 	{
 		TotDim = 0;
@@ -85,19 +82,19 @@ public:
 	}
 	/**************************************************************************************************************/
 		///access an array member address with the number of dimensions that you want
-	DataType& get(unsigned short TotDim_f, ...)
+	DataType& at(unsigned short TotDim_f, ...)
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDim_f);
 
-		DataType& val = get_p(TotDim_f, (size_t*)listPointer);
+		DataType& val = at_p(TotDim_f, (size_t*)listPointer);
 
 		va_end(listPointer);
 		return val;
 	}
 	/**************************************************************************************************************/
 	///access an array member address with all dimensions with an array of dimensions
-	DataType& get_p(unsigned short TotDim_f, size_t* args)
+	DataType& at_p(unsigned short TotDim_f, size_t* args)
 	{
 		if (TotDim_f < 1 || TotDim_f > TotDim)		return *((DataType*)0);
 		else if (TotDim == 1)						return ArrayPtr[*args];
@@ -118,7 +115,7 @@ public:
 	}
 	/**************************************************************************************************************/
 		///sort the array in an increasing order
-	void QuickSort(DataType* low = 0, DataType* high = 0)
+	void quicksort(DataType* low = 0, DataType* high = 0)
 	{
 		size_t low_int, high_int;
 
@@ -128,7 +125,7 @@ public:
 		if (!high) high_int = TotalElements - 1;
 		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
-		QuickSort_Driver(low_int, high_int);
+		quicksort_driver(low_int, high_int);
 		return;
 	}
 	/**************************************************************************************************************/
@@ -146,7 +143,7 @@ public:
 		return;
 	}
 	/**************************************************************************************************************/
-	bool IsSorted(DataType* low = 0, DataType* high = 0)
+	bool is_sorted(DataType* low = 0, DataType* high = 0)
 	{
 		size_t low_int, high_int;
 
@@ -156,10 +153,10 @@ public:
 		if (!high) high_int = TotalElements - 1;
 		else high_int = (size_t)(((size_t)high - (size_t)ArrayPtr.data()) / sizeof(DataType));
 
-		return IsSorted_Driver(low_int, high_int);
+		return is_sorted_driver(low_int, high_int);
 	}
 	/**************************************************************************************************************/
-	void Reverse(DataType* low = 0, DataType* high = 0)
+	void reverse(DataType* low = 0, DataType* high = 0)
 	{
 		size_t low_int, high_int;
 
@@ -196,13 +193,13 @@ public:
 
 		Dimensions.resize(TotDim_f);
 		Dimensions.shrink_to_fit();
-		Dimensions.assign(args, args + (TotDim_f * sizeof(size_t)));
+		Dimensions.assign(args, args + (TotDim_f));
 
 		unsigned short DimPtr_size = TotDim_f - 1;
 
 		if (TotDim_f > 1)
 		{
-			DimensionsProd.resize(TotDim_f);
+			DimensionsProd.resize(TotDim_f-1);
 			DimensionsProd.shrink_to_fit();
 
 			///Calculating DimProd
@@ -245,16 +242,16 @@ public:
 		ArrayPtr.shrink_to_fit();
 	}
 	/**************************************************************************************************************/
-	void Resize(unsigned short TotDim_f, ...)
+	void resize(unsigned short TotDim_f, ...)
 	{
 		va_list listPointer;
 		va_start(listPointer, TotDim_f);
-		Resize_p(TotDim_f, (size_t*)listPointer);
+		resize_p(TotDim_f, (size_t*)listPointer);
 		va_end(listPointer);
 	}
 	/**************************************************************************************************************/
 		///Expand the array and copying the members
-	void Resize_p(unsigned short TotDim_f, size_t* Dimensions_p)
+	void resize_p(unsigned short TotDim_f, size_t* Dimensions_p)
 	{
 		if (TotDim_f < 1)
 		{
@@ -277,7 +274,7 @@ public:
 		std::vector<size_t> Dimensions_f;
 		Dimensions_f.resize(TotDim_f);
 		Dimensions_f.shrink_to_fit();
-		Dimensions_f.assign(Dimensions_p, Dimensions_p + (TotDim_f * sizeof(size_t)));
+		Dimensions_f.assign(Dimensions_p, Dimensions_p + (TotDim_f));
 
 		///Calculate new DimensionsProd_f
 		size_t len;
@@ -411,7 +408,7 @@ public:
 		TotalElements = len;
 	}
 	/**************************************************************************************************************/
-	void PrintArrayAddresses()
+	void print_array()
 	{
 		if (TotalElements <= 0)
 		{
@@ -427,7 +424,8 @@ public:
 			{
 				std::cout << (size_t)Dimensions_final[j] << " ";
 			}
-			std::cout << "= " << "Addr: " << (size_t)&get_p(TotDim, Dimensions_final.data()) << "   Value: " << get_p(TotDim, Dimensions_final.data()) << std::endl;
+			DataType return_value = at_p(TotDim, Dimensions_final.data());
+			std::cout << "= " << "Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
@@ -452,37 +450,19 @@ public:
 		}
 	}
 	/***************************************************************************************************************************************/
-	size_t Get_TotalElements(void)
+	size_t capacity(void)
 	{
 		return TotalElements;
 	}
 	/***************************************************************************************************************************************/
-	size_t Get_SizeMember(void)
-	{
-		return sizeof(DataType);
-	}
-	/***************************************************************************************************************************************/
-	unsigned short Get_TotDim(void)
+	unsigned short tot_dim(void)
 	{
 		return TotDim;
 	}
 	/***************************************************************************************************************************************/
-	std::vector<size_t> Get_Dimensions(void)
+	std::vector<size_t> dimensions(void)
 	{
-		size_t len = sizeof(size_t) * TotDim;
-		std::vector<size_t> temp_ptr;
-		temp_ptr.resize(TotDim - 1);
-		memcpy((void*)temp_ptr.data(), Dimensions, len);
-		return temp_ptr;
-	}
-	/***************************************************************************************************************************************/
-	std::vector<size_t> Get_DimensionsProd(void)
-	{
-		size_t len = sizeof(size_t) * TotDim - 1;
-		std::vector<size_t> temp_ptr;
-		temp_ptr.resize(TotDim - 1);
-		memcpy((void*)temp_ptr.data(), DimensionsProd, len);
-		return temp_ptr;
+		return Dimensions;
 	}
 	/***************************************************************************************************************************************/
 private:
@@ -504,7 +484,7 @@ private:
 		return offset;
 	}
 	/**************************************************************************************************************/
-	size_t PartitionQuickSort(size_t low, size_t high)
+	size_t partition_quicksort(size_t low, size_t high)
 	{
 		DataType pivot = ArrayPtr[high]; // pivot  
 		size_t PIndex = low; // Index of smaller element  
@@ -529,29 +509,29 @@ private:
 		return PIndex;
 	}
 	/**************************************************************************************************************/
-	void QuickSort_Driver(size_t low, size_t high)
+	void quicksort_driver(size_t low, size_t high)
 	{
 		while (low < high)
 		{
 			/* pi is partitioning index, arr[p] is nowat right place */
-			size_t PIndex = PartitionQuickSort(low, high);
+			size_t PIndex = partition_quicksort(low, high);
 
 			// If left part is smaller, then recur for left part and handle right part iteratively 
 			if (PIndex - low < high - PIndex)
 			{
-				if (PIndex > 0) QuickSort_Driver(low, PIndex - 1);
+				if (PIndex > 0) quicksort_driver(low, PIndex - 1);
 				low = PIndex + 1;
 			}
 			// Else recur for right part 
 			else
 			{
-				QuickSort_Driver(PIndex + 1, high);
+				quicksort_driver(PIndex + 1, high);
 				high = PIndex - 1;
 			}
 		}
 	}
 	/**************************************************************************************************************/
-	bool IsSorted_Driver(size_t low, size_t high)
+	bool is_sorted_driver(size_t low, size_t high)
 	{
 		if (low > high) return false;
 
@@ -569,6 +549,5 @@ private:
 	}
 	/**************************************************************************************************************/
 };
-
 
 #endif	//_ARRAYCLS_CPP_
