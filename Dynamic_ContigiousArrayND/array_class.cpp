@@ -1,7 +1,6 @@
 #ifndef _ARRAYCLS_CPP_
 #define _ARRAYCLS_CPP_
 
-#include <stdarg.h>
 #include <iostream>
 #include <string>
 #include <algorithm>
