@@ -371,6 +371,8 @@ public:
 		}
 		std::cout << std::endl;
 		std::cout << "Total elements: " << TotalElements << std::endl;
+		std::cout << "Size of element (bytes): " << sizeof(DataType) << std::endl;
+		std::cout << "Total size (bytes): " << TotalElements * sizeof(DataType) << std::endl;
 
 		if (TotalElements <= 0) return;
 
