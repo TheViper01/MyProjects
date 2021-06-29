@@ -8,43 +8,6 @@
 #include <vector>
 
 
-#ifndef swap(a, b)
-#define swap(a, b)\
-	do{\
-		decltype(a) temp = a;\
-		a = b;\
-		b = temp;\
-	}while(0)
-#endif // !swap(a, b)
-
-
-
-#ifndef MIN(X, Y)
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-#endif // !MIN(X, Y)
-
-#ifndef MIN(X, Y)
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-#endif // !MIN(X, Y)
-
-
-#ifndef SwitchOrder(arr_ptr, TotIteams)
-#define SwitchOrder(arr_ptr, TotIteams)\
-    do{\
-		typename std::remove_pointer <decltype(arr_ptr)>::type temp;\
-		size_t start = 0, end = TotIteams - 1;\
-		while (start < end)\
-		{\
-			temp = arr_ptr[start];\
-			arr_ptr[start] = arr_ptr[end];\
-			arr_ptr[end] = temp;\
-			start++;\
-			end--;\
-		}\
-    }while(0)
-#endif // !SwitchOrder(arr_ptr, TotIteams)
-
-
 /***************************************************************************************************************************************/
 template <typename DataType>
 class arrayND
@@ -220,7 +183,7 @@ public:
 
 				//std::cout << "Dimensions[" << counter - 1 << "] = " << DimensionsProd[counter - 1] << std::endl;
 			}
-			SwitchOrder(DimensionsProd.data(), DimPtr_size);
+			std::reverse(DimensionsProd.begin(), DimensionsProd.end());
 			TotalElements = DimensionsProd[0] * Dimensions[0];
 		}
 		else if (TotDim_f < 1)
@@ -321,20 +284,20 @@ public:
 		array_temp.shrink_to_fit();
 
 		///1 dimension case
-		if (MIN(TotDim_f, TotDim) == 1)
+		if (std::min(TotDim_f, TotDim) == 1)
 		{
-			std::copy(ArrayPtr.begin(), ArrayPtr.begin() + MIN(Dimensions_f[TotDim_f-1], Dimensions[TotDim-1]), array_temp.begin());
+			std::copy(ArrayPtr.begin(), ArrayPtr.begin() + std::min(Dimensions_f[TotDim_f-1], Dimensions[TotDim-1]), array_temp.begin());
 		}
 
 		///dimensions>1 dimension case
 		else
 		{
 			///Calculate array dimensions differences
-			unsigned short Lowest_arr = MIN(TotDim, TotDim_f);
-			size_t BlockMemory = MIN(Dimensions_f[0], Dimensions[0]) * DimensionsProd[0];
-			SwitchOrder(Dimensions_f.data(), TotDim_f);
-			SwitchOrder(Dimensions.data(), TotDim);
-			SwitchOrder(DimensionsProd.data(), (TotDim - 1));
+			unsigned short Lowest_arr = std::min(TotDim, TotDim_f);
+			size_t BlockMemory = std::min(Dimensions_f[0], Dimensions[0]) * DimensionsProd[0];
+			std::reverse(Dimensions_f.begin(), Dimensions_f.end());
+			std::reverse(Dimensions.begin(), Dimensions.end());
+			std::reverse(DimensionsProd.begin(), DimensionsProd.end());
 
 			unsigned short Lowest_arr_1 = Lowest_arr - 1;
 			unsigned short FirstDifference = Lowest_arr_1;
@@ -344,7 +307,7 @@ public:
 			{
 				if (Dimensions_f[j] != Dimensions[j])
 				{
-					BlockMemory = MIN(DimensionsProd[j], DimensionsProd_f[j]);
+					BlockMemory = std::min(DimensionsProd[j], DimensionsProd_f[j]);
 					FirstDifference = j;
 					BlockMembersJmp_src = DimensionsProd[j];
 					break;
@@ -365,7 +328,7 @@ public:
 
 				for (unsigned short j = 0; j < Lowest_arr; j++)
 				{
-					Dimensions_min[j] = MIN(Dimensions[j], Dimensions_f[j]);
+					Dimensions_min[j] = std::min(Dimensions[j], Dimensions_f[j]);
 				}
 
 				///Memcpy the array
@@ -397,8 +360,8 @@ public:
 				Dimensions_final.~vector();
 				Dimensions_min.~vector();
 			}
-			SwitchOrder(DimensionsProd_f.data(), (TotDim_f - 1));
-			SwitchOrder(Dimensions_f.data(), TotDim_f);
+			std::reverse(DimensionsProd_f.begin(), DimensionsProd_f.end());
+			std::reverse(Dimensions_f.begin(), Dimensions_f.end());
 		}
 
 		ArrayPtr = array_temp;
@@ -424,7 +387,7 @@ public:
 			{
 				std::cout << "[" << (size_t)Dimensions_final[j] << "]";
 			}
-			DataType return_value = at_p(TotDim, Dimensions_final.data());
+			DataType &return_value = at_p(TotDim, Dimensions_final.data());
 			std::cout << " = " << "Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
@@ -465,11 +428,12 @@ public:
 		return Dimensions;
 	}
 	/***************************************************************************************************************************************/
+	std::vector<size_t> DimensionsProd;
 private:
 	std::vector<DataType> ArrayPtr;
 	unsigned short TotDim;
 	std::vector<size_t> Dimensions;
-	std::vector<size_t> DimensionsProd;
+	//std::vector<size_t> DimensionsProd;
 	size_t TotalElements;
 
 	///used in expand functions with the arguments array switched order
