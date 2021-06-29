@@ -363,11 +363,17 @@ public:
 	/**************************************************************************************************************/
 	void print_array()
 	{
-		if (TotalElements <= 0)
+		std::cout << "Total dimensions: " << TotDim << std::endl;
+		std::cout << "Dimensions: ";
+		for (unsigned short j = 0; j < TotDim; j++)
 		{
-			std::cout << "The array size is 0" << std::endl;
-			return;
+			std::cout << "[" << (size_t)Dimensions[j] << "]";
 		}
+		std::cout << std::endl;
+		std::cout << "Total elements: " << TotalElements << std::endl;
+
+		if (TotalElements <= 0) return;
+
 		std::vector<size_t> Dimensions_final;
 		Dimensions_final.resize(TotDim);
 		unsigned short TotDim_1 = TotDim - 1;
