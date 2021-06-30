@@ -15,11 +15,11 @@ static void ordinate_fill(DataType* Array, size_t size)
 
 int main()
 {
-	ArrayCls<DataType> arr_1(3, 3, 4, 100);
+	ArrayCls<DataType> arr_1(3, 4, 100);
 	
 	ordinate_fill(arr_1.data(), arr_1.capacity());
 	
-	arr_1.Resize(4, 4, 5, 6, 120);
+	arr_1.Resize(4, 5, 6, 120);
 	arr_1.print_array();
 	
 	arr_1.~ArrayCls();
