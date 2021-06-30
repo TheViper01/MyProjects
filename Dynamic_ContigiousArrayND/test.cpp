@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include "array_class.cpp"
 
 #define DataType int
