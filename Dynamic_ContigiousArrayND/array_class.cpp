@@ -2,7 +2,6 @@
 #define _ARRAYCLS_CPP_
 
 #include <iostream>
-#include <string>
 #include <algorithm>
 #include <vector>
 #include <sstream> // for ostringstream
