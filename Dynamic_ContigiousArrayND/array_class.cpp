@@ -5,6 +5,7 @@
 #include <string>
 #include <algorithm>
 #include <vector>
+#include <sstream> // for ostringstream
 
 
 /***************************************************************************************************************************************/
@@ -360,20 +361,22 @@ public:
 		TotalElements = len;
 	}
 	/**************************************************************************************************************/
-	void print_array()
+	std::ostringstream print_array()
 	{
-		std::cout << "Total dimensions: " << TotDim << std::endl;
-		std::cout << "Dimensions: ";
+		std::ostringstream str_stream;
+		str_stream << "Total dimensions: " << TotDim << std::endl;
+		str_stream << "Dimensions: ";
+
 		for (unsigned short j = 0; j < TotDim; j++)
 		{
-			std::cout << "[" << (size_t)Dimensions[j] << "]";
+			str_stream << "[" << (size_t)Dimensions[j] << "]";
 		}
-		std::cout << std::endl;
-		std::cout << "Total elements: " << TotalElements << std::endl;
-		std::cout << "Size of element (bytes): " << sizeof(DataType) << std::endl;
-		std::cout << "Total size (bytes): " << TotalElements * sizeof(DataType) << std::endl;
+		str_stream << std::endl;
+		str_stream << "Total elements: " << TotalElements << std::endl;
+		str_stream << "Size of element (bytes): " << sizeof(DataType) << std::endl;
+		str_stream << "Total size (bytes): " << TotalElements * sizeof(DataType) << std::endl;
 
-		if (TotalElements <= 0) return;
+		if (TotalElements <= 0) return str_stream;
 
 		std::vector<size_t> Dimensions_final;
 		Dimensions_final.resize(TotDim);
@@ -382,10 +385,10 @@ public:
 		{
 			for (unsigned short j = 0; j < TotDim; j++)
 			{
-				std::cout << "[" << (size_t)Dimensions_final[j] << "]";
+				str_stream << "[" << (size_t)Dimensions_final[j] << "]";
 			}
 			DataType &return_value = at_p(TotDim, Dimensions_final.data());
-			std::cout << " = Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
+			str_stream << " = Addr: " << (size_t)&return_value << "   Value: " << return_value << std::endl;
 
 			Dimensions_final[TotDim_1] += 1;
 
@@ -397,9 +400,9 @@ public:
 					Dimensions_final[j - 1] += 1;
 				}
 			}
-			//printf("%d %d\n", Dimensions_final[2], Dimensions[2]);
 			if (Dimensions_final[0] >= Dimensions[0]) break;
 		}
+		return str_stream;
 	}
 	/**************************************************************************************************************/
 	void fill(DataType* Value)
