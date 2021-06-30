@@ -20,7 +20,7 @@ int main()
 	ordinate_fill(arr_1.data(), arr_1.capacity());
 	
 	arr_1.Resize(4, 5, 6, 120);
-	arr_1.print_array();
+	std::cout << arr_1.print_array().str();
 	
 	arr_1.~ArrayCls();
 
