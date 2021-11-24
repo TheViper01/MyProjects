@@ -68,6 +68,9 @@ static void randomize(void* _arr, size_t _num_elem, size_t _size_m) //Fisher–Y
 /****************************************************************************************************************************************/
 static void print_bj_logo()
 {
+	printf("%s", KRED);
+	printf("                               Made by BadBoy\n\n");
+	printf("%s", KNRM);
 }
 
 
