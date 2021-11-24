@@ -8,7 +8,7 @@
 #include <time.h>
 #include<conio.h>
 
-#include "sort.h"
+//#include "sort.h"
 
 #ifndef MIN(X, Y)
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
@@ -32,6 +32,39 @@
 //#define ONLY_VALUE_CARDS 8
 //#define NO_CLS 1
 
+/****************************************************************************************************************************************/
+
+static void swap_g(void* a, void* b, size_t size_m)
+{
+	size_t temp, written = 0;
+	while (MIN(sizeof(size_t), size_m - written) > 0)
+	{
+		if ((size_m - written) < sizeof(size_t))
+		{
+			memcpy(&temp, (((char*)a) + written), (size_m - written));
+			memcpy((((char*)a) + written), (((char*)b) + written), (size_m - written));
+			memcpy((((char*)b) + written), &temp, (size_m - written));
+			break;
+		}
+		temp = *(size_t*)(((char*)a) + written);
+		*(size_t*)(((char*)a) + written) = *(size_t*)(((char*)b) + written);
+		*(size_t*)(((char*)b) + written) = temp;
+		written += MIN(sizeof(size_t), size_m - written);
+	}
+}
+
+static void randomize(void* _arr, size_t _num_elem, size_t _size_m) //Fisher–Yates shuffle algorithm
+{
+	size_t i, j;
+	if (_num_elem <= 1) return;
+	srand((unsigned int)time(NULL));
+	_num_elem *= _size_m;
+	for (i = _num_elem - _size_m; i > 0; i -= _size_m)
+	{
+		j = (rand() % ((i / _size_m) + 1)) * _size_m;
+		swap_g((((char*)_arr) + i), (((char*)_arr) + j), _size_m);
+	}
+}
 /****************************************************************************************************************************************/
 static void print_bj_logo()
 {
@@ -292,7 +325,7 @@ static void print_hand(hand *_hand)
 	//printf("won_lost: %d\n", _hand->won_lost);
 	//printf("num_cards: %d\n", _hand->num_cards);
 
-	printf("Bet ammount: %.2lf\n", _hand->bet_ammount);
+	printf("Bet ammount: %.2lf $\n", _hand->bet_ammount);
 	printf("Hand points: %d\n", hand_points(_hand));
 	printf("Stage game: ");
 	switch (_hand->still_playing)
@@ -337,7 +370,7 @@ static void print_player_info(player* _player)
 	size_t i;
 	printf("*************************Player %d **************************\n", _player->id);
 	printf("ID: %u\n", _player->id);
-	printf("Balance: %.2lf\n", _player->balance);
+	printf("Balance: %.2lf $\n", _player->balance);
 	print_hands(_player);
 }
 
@@ -346,7 +379,7 @@ static void print_dealer_info(player* _player)
 	size_t i;
 	printf("*************************Dealer %d **************************\n", _player->id);
 	printf("ID: %u\n", _player->id);
-	printf("Balance: %.2lf\n", _player->balance);
+	printf("Balance: %.2lf $\n", _player->balance);
 	print_hands(_player);
 }
 
