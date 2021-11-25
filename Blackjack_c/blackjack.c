@@ -29,8 +29,8 @@
 
 /****************************************************************************************************************************************/
 #define BJ_MAX_HANDS_PER_PLAYER 4
-//#define ONLY_VALUE_CARDS 8
-//#define NO_CLS 1
+//#define ONLY_VALUE_CARDS 8	//uncomment to set all cards 1 value (to debug easier the split hand function)
+//#define NO_CLS 1		//uncomment to disable clear screen
 
 /****************************************************************************************************************************************/
 
