@@ -29,27 +29,30 @@
 
 /****************************************************************************************************************************************/
 #define BJ_MAX_HANDS_PER_PLAYER 4
-//#define ONLY_VALUE_CARDS 8	//uncomment to set all cards 1 value (to debug easier the split hand function)
-//#define NO_CLS 1		//uncomment to disable clear screen
+//#define ONLY_VALUE_CARDS 8
+//#define NO_CLS 1
 
 /****************************************************************************************************************************************/
 
-static void swap_g(void* a, void* b, size_t size_m)
+static void swap_g(void* _a, void* _b, size_t size_m)
 {
-	size_t temp, written = 0;
-	while (MIN(sizeof(size_t), size_m - written) > 0)
+	size_t temp;
+	while (size_m >= sizeof(size_t))		//22 asm operations
 	{
-		if ((size_m - written) < sizeof(size_t))
-		{
-			memcpy(&temp, (((char*)a) + written), (size_m - written));
-			memcpy((((char*)a) + written), (((char*)b) + written), (size_m - written));
-			memcpy((((char*)b) + written), &temp, (size_m - written));
-			break;
-		}
-		temp = *(size_t*)(((char*)a) + written);
-		*(size_t*)(((char*)a) + written) = *(size_t*)(((char*)b) + written);
-		*(size_t*)(((char*)b) + written) = temp;
-		written += MIN(sizeof(size_t), size_m - written);
+
+		temp = *((size_t*)_a);
+		*((size_t*)_a) = *((size_t*)_b);
+		*((size_t*)_b) = temp;
+
+		_a = (char*)_a + sizeof(size_t);
+		_b = (char*)_b + sizeof(size_t);
+		size_m -= sizeof(size_t);
+	}
+	if (size_m)
+	{
+		memcpy(&temp, _a, size_m);
+		memcpy(_a, _b, size_m);
+		memcpy(_b, &temp, size_m);
 	}
 }
 
@@ -76,8 +79,8 @@ static void print_bj_logo()
 
 
 typedef unsigned char BYTE;
-enum won_lost{won = 1, tie = 0, lost = -1};
-enum bool{ false = 0, true = 1 };
+enum won_lost { won = 1, tie = 0, lost = -1 };
+enum bool2 { false2 = 0, true2 = 1 };
 enum value { ace = 1, two, three, four, five, six, seven, eight, nine, ten, jack, queen, king };
 enum color { black = 0, red };
 enum suit { clubs = 0, diamond, hearts, spades };
@@ -99,8 +102,8 @@ typedef struct hand
 {
 	card cards[15];
 	int num_cards;
-	enum bool still_playing;
-	enum bool stay;
+	enum bool2 still_playing;
+	enum bool2 stay;
 	enum won_lost won_lost;
 	double bet_ammount;
 }hand;
@@ -126,6 +129,7 @@ typedef struct table
 };
 
 static void print_card(card*);
+static int hand_points(hand* _hand);
 
 static void print_deck(deck* _deck)
 {
@@ -145,7 +149,8 @@ static void shuffle_deck(struct deck* _deck)
 
 static void init_deck(struct deck* _deck)
 {
-	size_t i, j, k, color, arr_count = 0;
+	int i, j, k, color;
+	size_t arr_count = 0;
 	_deck->num_cards = 52 * 8;
 	for (k = 0; k < 8; k++)
 	{
@@ -154,9 +159,9 @@ static void init_deck(struct deck* _deck)
 			color = 1;
 			for (j = 0; j < 4; j++)
 			{
-				_deck->cards[arr_count].value = i;
-				_deck->cards[arr_count].color = color;
-				_deck->cards[arr_count].suit = j;
+				_deck->cards[arr_count].value = (enum value)i;
+				_deck->cards[arr_count].color = (enum color)color;
+				_deck->cards[arr_count].suit = (enum suit)j;
 				color++;
 				if (color == 2)
 				{
@@ -179,12 +184,12 @@ static struct card pick_card(struct deck* _deck)
 }
 /****************************************************************************************************************************************/
 
-static void init_hand(hand *_hand)
+static void init_hand(hand* _hand)
 {
 	_hand->bet_ammount = 0;
 	_hand->num_cards = 0;
-	_hand->stay = false;
-	_hand->still_playing = true;
+	_hand->stay = false2;
+	_hand->still_playing = true2;
 }
 
 static void init_player(struct player* _player, size_t _id, double _money)
@@ -204,13 +209,13 @@ static double make_bet(struct player* _player, double _money)
 	return _player->hands[0].bet_ammount;
 }
 
-static struct card* player_pick_card(hand *_hand, struct table* _table)
+static struct card* player_pick_card(hand* _hand, struct table* _table)
 {
 	_hand->cards[_hand->num_cards] = pick_card(&_table->deck);
 
-	#ifdef ONLY_VALUE_CARDS
-		_hand->cards[_hand->num_cards].value = ONLY_VALUE_CARDS;
-	#endif // ONLY_VALUE_CARDS
+#ifdef ONLY_VALUE_CARDS
+	_hand->cards[_hand->num_cards].value = ONLY_VALUE_CARDS;
+#endif // ONLY_VALUE_CARDS
 
 	_hand->num_cards += 1;
 	return &_hand->cards[_hand->num_cards - 1];
@@ -239,7 +244,7 @@ static int still_playing_players(struct table* _table)
 	{
 		for (j = 0; j < _table->players[i].num_hands; j++)
 		{
-			if (_table->players[i].hands[j].still_playing == true)
+			if (_table->players[i].hands[j].still_playing == true2)
 			{
 				count++;
 			}
@@ -256,7 +261,7 @@ static int pending_hands(struct table* _table)
 	{
 		for (j = 0; j < _table->players[i].num_hands; j++)
 		{
-			if (_table->players[i].hands[j].still_playing == true && _table->players[i].hands[j].stay == false)
+			if (_table->players[i].hands[j].still_playing == true2 && _table->players[i].hands[j].stay == false2)
 			{
 				count++;
 			}
@@ -265,7 +270,7 @@ static int pending_hands(struct table* _table)
 	return count;
 }
 
-static void print_card(card *_card)
+static void print_card(card* _card)
 {
 	switch (_card->value)
 	{
@@ -319,7 +324,7 @@ static void print_card(card *_card)
 	}
 }
 
-static void print_hand(hand *_hand)
+static void print_hand(hand* _hand)
 {
 	size_t i;
 
@@ -333,11 +338,11 @@ static void print_hand(hand *_hand)
 	printf("Stage game: ");
 	switch (_hand->still_playing)
 	{
-	case false:
+	case false2:
 		if (_hand->won_lost == won)
 		{
 			printf("WON ");
-			if (hand_points(_hand) == 21) printf("%.2lf $", _hand->bet_ammount * 2/3);
+			if (hand_points(_hand) == 21) printf("%.2lf $", _hand->bet_ammount * 2 / 3);
 			else printf("%g $", _hand->bet_ammount);
 		}
 		else if (_hand->won_lost == lost) printf("LOST %.2lf $", _hand->bet_ammount);
@@ -391,9 +396,9 @@ static void won_lost_routine(struct player* _player, struct table* _table);
 static void print_all_players_info(struct table* _table)
 {
 	size_t i;
-	#ifndef NO_CLS
-		system("Cls");
-	#endif // NO_CLS
+#ifndef NO_CLS
+	system("Cls");
+#endif // NO_CLS
 	print_bj_logo();
 	printf("-------------------------------Players info-----------------------------\n");
 	print_dealer_info(&_table->dealer);
@@ -443,33 +448,33 @@ static int won_lost_hand(hand* _hand, struct table* _table) //0=lost, 1=won, 2=t
 {
 	int hand_points_ = hand_points(_hand);
 	int dealer_points = hand_points(&_table->dealer.hands[0]);
-	enum bool hand_stay = _hand->stay;
-	enum bool dealer_stay = _table->dealer.hands[0].stay;
+	enum bool2 hand_stay = _hand->stay;
+	enum bool2 dealer_stay = _table->dealer.hands[0].stay;
 	if (hand_points_ == 21)
 	{
-		_hand->stay = true;
+		_hand->stay = true2;
 		_hand->won_lost = won;
 		return 1;
 	}
 	else if (hand_points_ > 21)
 	{
 		_hand->won_lost = lost;
-		_hand->stay = true;
+		_hand->stay = true2;
 		return 0;
 	}
 	else if (dealer_points > 21)
 	{
 		_hand->won_lost = won;
-		_table->dealer.hands[0].stay = true;
-		_hand->stay = true;
+		_table->dealer.hands[0].stay = true2;
+		_hand->stay = true2;
 		return 1;
 	}
-	else if (hand_stay == true && dealer_stay == true)
+	else if (hand_stay == true2 && dealer_stay == true2)
 	{
 		if (hand_points_ > dealer_points)
 		{
 			_hand->won_lost = won;
-			_hand->stay = true;
+			_hand->stay = true2;
 			return 1;
 		}
 		else if (dealer_points > hand_points_)
@@ -496,24 +501,24 @@ static double won_lost_ammount_hand(hand* _hand, struct table* _table)
 {
 	int hand_points_ = hand_points(_hand);
 	int dealer_points = hand_points(&_table->dealer.hands[0]);
-	enum bool hand_stay = _hand->stay;
-	enum bool dealer_stay = _table->dealer.hands[0].stay;
+	enum bool2 hand_stay = _hand->stay;
+	enum bool2 dealer_stay = _table->dealer.hands[0].stay;
 	if (hand_points_ == 21)
 	{
-		_hand->stay = true;
+		_hand->stay = true2;
 		return _hand->bet_ammount * 2 / 3;
 	}
 	else if (hand_points_ > 21)
 	{
-		_hand->stay = true;
+		_hand->stay = true2;
 		return -_hand->bet_ammount;
 	}
 	else if (dealer_points > 21)
 	{
-		_table->dealer.hands[0].stay = true;
+		_table->dealer.hands[0].stay = true2;
 		return _hand->bet_ammount;
 	}
-	else if (hand_stay == dealer_stay == true)
+	else if (hand_stay == dealer_stay == true2)
 	{
 		if (hand_points_ > dealer_points)
 		{
@@ -544,21 +549,21 @@ static void won_lost_routine(struct player* _player, struct table* _table)
 		switch (won_lost_hand(&_player->hands[i], _table))
 		{
 		case -1:
-			_player->hands[i].still_playing = true;
+			_player->hands[i].still_playing = true2;
 			break;
 		case 0:
-			_player->hands[i].still_playing = false;
+			_player->hands[i].still_playing = false2;
 			//printf("        YOU LOST %lf\n\n", won_lost_ammount_hand(&_player->hands[i], _table));
 			//_player->bet_ammount = 0.00;
 			break;
 		case 1:
-			_player->hands[i].still_playing = false;
+			_player->hands[i].still_playing = false2;
 			//printf("        YOU WON %lf$\n\n", won_lost_ammount_hand(&_player->hands[i], _table));
 			_player->balance += _player->hands[i].bet_ammount + won_lost_ammount_hand(&_player->hands[i], _table);
 			//_player->bet_ammount = 0.00;
 			break;
 		case 2:
-			_player->hands[i].still_playing = false;
+			_player->hands[i].still_playing = false2;
 			//printf("        IT'S A TIE\n\n");
 			_player->balance += _player->hands[i].bet_ammount;
 			//_player->bet_ammount = 0.00;
@@ -573,9 +578,9 @@ static void give_first_2_cards(struct table* _table)
 	struct card* temp_card;
 	shuffle_deck(&_table->deck);
 	//print_all_players_info(_table);
-	#ifndef NO_CLS
-		system("Cls");
-	#endif // NO_CLS
+#ifndef NO_CLS
+	system("Cls");
+#endif // NO_CLS
 	printf("////////////////////////////////////First 2 cars/////////////////////////////////////////////////\n");
 	temp_card = player_pick_card(&_table->dealer.hands[0], _table); //dealer card
 	print_dealer_info(&_table->dealer);
@@ -591,7 +596,7 @@ static void give_first_2_cards(struct table* _table)
 }
 
 
-static void split_hand(hand *_hand_to_split, hand *_hand_2)
+static void split_hand(hand* _hand_to_split, hand* _hand_2)
 {
 	if (_hand_to_split->num_cards != 2) return;
 	_hand_2->num_cards = 1;
@@ -600,8 +605,8 @@ static void split_hand(hand *_hand_to_split, hand *_hand_2)
 	_hand_2->cards[0] = _hand_to_split->cards[1];
 
 	_hand_2->bet_ammount = _hand_to_split->bet_ammount;
-	_hand_2->stay = false;
-	_hand_2->still_playing = true;
+	_hand_2->stay = false2;
+	_hand_2->still_playing = true2;
 }
 
 static void give_more_cards(struct table* _table)
@@ -615,7 +620,7 @@ static void give_more_cards(struct table* _table)
 		{
 			for (i = 0; i < _table->players[j].num_hands; i++)
 			{
-				if (_table->players[j].hands[i].bet_ammount == 0.00 || _table->players[j].hands[i].stay == true || _table->players[j].hands[i].still_playing == false/* || won_lost_hand(&_table->players[j].hands[i], _table) == -1*/) continue;
+				if (_table->players[j].hands[i].bet_ammount == 0.00 || _table->players[j].hands[i].stay == true2 || _table->players[j].hands[i].still_playing == false2/* || won_lost_hand(&_table->players[j].hands[i], _table) == -1*/) continue;
 				print_all_players_info(_table);
 				//print_player_info(&_table->players[j]);
 				while (1)
@@ -647,7 +652,7 @@ static void give_more_cards(struct table* _table)
 					}
 					else if (char_temp_1 == 'n' || char_temp_1 == 'N')
 					{
-						_table->players[j].hands[i].stay = true;
+						_table->players[j].hands[i].stay = true2;
 						break;
 					}
 					else
@@ -668,8 +673,8 @@ static int dealer_pick_until(struct table* _table) //return dealer hand points
 		printf("dealer cards: %d\n\n", _table->dealer.hands[0].num_cards);
 		player_pick_card(&_table->dealer.hands[0], _table);
 	}
-	_table->dealer.hands[0].stay = true;
-	
+	_table->dealer.hands[0].stay = true2;
+
 	return hand_points(&_table->dealer.hands[0]);
 }
 
@@ -715,7 +720,7 @@ static int main_loop()
 			}
 			give_first_2_cards(&bj_table);
 			give_more_cards(&bj_table);
-			if(still_playing_players(&bj_table) > 0) dealer_pick_until(&bj_table);
+			if (still_playing_players(&bj_table) > 0) dealer_pick_until(&bj_table);
 
 			print_all_players_info(&bj_table);
 
