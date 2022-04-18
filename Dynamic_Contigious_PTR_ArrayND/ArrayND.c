@@ -5,21 +5,37 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <assert.h>
+//#include <iostream>
 
-#define swap(a, b)\
-	do{\
-		auto temp = a;\
-		a = b;\
-		b = temp;\
-	}while(0)
+//#define swap(a, b)\
+//	do{\
+//		auto temp = a;\
+//		a = b;\
+//		b = temp;\
+//	}while(0)
 
-/*#define PrintArray(Ptr, Size)\
-    for(size_t j=0; j < Size; j++)\
-    {\
-		std::cout << "[" << j << "] = " << (size_t)&Ptr[j] << std::endl;\
-    }*/
 /**********************************************************************************************************************/
-static void* ArrayND(size_t size_m, unsigned short numargs, ...)
+void** array_2d(size_t _row, size_t _col, size_t _size_m)
+{
+	char *ptr, **arr;
+	size_t i;
+
+	arr = (char**)malloc(sizeof(char*) * _row + _size_m * _col * _row);
+	if (!arr) return 0; //Memory allocation failed
+
+	// ptr is now pointing to the first element in of 2D array
+	ptr = (char*)(arr + _row);
+
+	// for loop to point rows pointer to appropriate location in 2D array
+	for (i = 0; i < _row; i++)
+	{
+		arr[i] = ((char*)(ptr + _col * i * _size_m));
+	}
+	return (void**)arr;
+}
+/**********************************************************************************************************************/
+void* arrayND(size_t size_m, unsigned short numargs, ...)
 {
 	va_list listPointer;
 	va_start(listPointer, numargs);
@@ -37,11 +53,13 @@ static void* ArrayND(size_t size_m, unsigned short numargs, ...)
 	if (numargs == 1)
 	{
 		void* array = (void*)malloc(size_m * args[0]);
+		assert(array);
 		va_end(listPointer);
 		return array;
 	}
 
 	size_t* PtrProdSum = (size_t*)malloc(((numargs - 1) * 2) * sizeof(size_t));
+	assert(PtrProdSum);
 	size_t* PtrProd = &PtrProdSum[numargs - 1];
 
 	if (!PtrProdSum) return 0;
@@ -64,6 +82,7 @@ static void* ArrayND(size_t size_m, unsigned short numargs, ...)
 
 	size_t len = (sizeof(void*) * PtrProdSum[numargs - 2]) + (size_m * PtrProd[numargs - 2] * args[numargs - 1]);
 	void** array = (void**)malloc(len);      ///assign a big block of memory
+	assert(array);
 
 	if (!array) return 0;
 
@@ -98,7 +117,6 @@ static void* ArrayND(size_t size_m, unsigned short numargs, ...)
 	{
 		array[i] = ptr + ColMemory * j;
 		//printf("array[%d] = %d    jump = %d    sum = %d\n", i, &array[i], ptr + (ColMemory * j), (ColMemory * j));
-
 		j++;
 	}
 
